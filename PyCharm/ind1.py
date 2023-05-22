@@ -7,7 +7,7 @@ from threading import Lock, Thread
 
 
 def manager():
-    with lock:  # Захватываем блокировку с помощью оператора with
+    with lock:  # Захватываем блокировку
         tasks = []
         while not q.empty():  # Пока очередь не пуста
             task = q.get()  # Извлекаем задачу из очереди
