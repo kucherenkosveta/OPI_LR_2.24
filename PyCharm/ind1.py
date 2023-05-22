@@ -7,18 +7,16 @@ from threading import Lock, Thread
 
 
 def manager():
-    lock.acquire()  # Захватываем блокировку
-    tasks = []
-    while not q.empty():  # Пока очередь не пуста
-        task = q.get()  # Извлекаем задачу из очереди
-        worker = random.choice(workers)  # Случайным образом выбираем работника
-        print(f"Менеджер передал задачу '{task}' работнику {worker}")
-        tasks.append({
-            "Задача": task,
-            "Работник": worker
-        })
-
-    lock.release()  # Освобождаем блокировку
+    with lock:  # Захватываем блокировку с помощью оператора with
+        tasks = []
+        while not q.empty():  # Пока очередь не пуста
+            task = q.get()  # Извлекаем задачу из очереди
+            worker = random.choice(workers)  # Случайным образом выбираем работника
+            print(f"Менеджер передал задачу '{task}' работнику {worker}")
+            tasks.append({
+                "Задача": task,
+                "Работник": worker
+            })
 
     # Выводим информацию о нераспределенных задачах
     for task in tasks:
@@ -27,13 +25,10 @@ def manager():
 
 
 def worker():
-    lock.acquire()
-    while not q.empty():
-        task = q.get()
-        print(f"Работник {worker_id} выполняет задачу: '{task}'")
-        lock.release()
-        lock.acquire()
-    lock.release()
+    with lock:
+        while not q.empty():
+            task = q.get()
+            print(f"Работник {worker_id} выполняет задачу: '{task}'")
 
 
 if __name__ == "__main__":
