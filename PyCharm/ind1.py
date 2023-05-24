@@ -6,25 +6,24 @@ from queue import Queue
 from threading import Lock, Thread
 
 
-def manager():
-    with lock:  # Захватываем блокировку
+def manager(lock, q):
+    with lock:
         tasks = []
-        while not q.empty():  # Пока очередь не пуста
-            task = q.get()  # Извлекаем задачу из очереди
-            worker = random.choice(workers)  # Случайным образом выбираем работника
+        while not q.empty():
+            task = q.get()
+            worker = random.choice(workers)
             print(f"Менеджер передал задачу '{task}' работнику {worker}")
             tasks.append({
                 "Задача": task,
                 "Работник": worker
             })
 
-    # Выводим информацию о нераспределенных задачах
     for task in tasks:
         if task["Работник"] is None:
             print(f"Задача '{task['Задача']}' ожидает выполнения")
 
 
-def worker():
+def worker(lock, q, worker_id):
     with lock:
         while not q.empty():
             task = q.get()
@@ -37,13 +36,10 @@ if __name__ == "__main__":
     lock = Lock()
     q = Queue()
 
-    # Заполняем очередь задачами
     for task in tasks:
         q.put(task)
 
-    # Запускаем потоки работников
     for worker_id in workers:
-        Thread(target=worker).start()
+        Thread(target=worker, args=(lock, q, worker_id)).start()
 
-    # Запускаем поток менеджера
-    Thread(target=manager).start()
+    Thread(target=manager, args=(lock, q)).start()
